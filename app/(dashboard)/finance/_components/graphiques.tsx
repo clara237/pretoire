@@ -15,13 +15,13 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatFCFA } from "@/lib/utils";
 
-interface PointMensuel {
+export interface PointMensuel {
   mois: string;
   facture: number;
   encaisse: number;
 }
 
-interface RecetteDepenseMois {
+export interface RecetteDepenseMois {
   mois: string;
   recettes: number;
   depenses: number;

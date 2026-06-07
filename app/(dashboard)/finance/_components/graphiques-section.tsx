@@ -1,5 +1,5 @@
 import { serieMensuelle, recettesDepenses } from "../_lib/donnees";
-import { GraphiqueCA, GraphiqueTresorerie } from "./graphiques";
+import { GraphiquesClient } from "./graphiques-client";
 
 export async function GraphiquesSection() {
   const [ca, tresorerie] = await Promise.all([
@@ -7,10 +7,5 @@ export async function GraphiquesSection() {
     recettesDepenses(),
   ]);
 
-  return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <GraphiqueCA data={ca} />
-      <GraphiqueTresorerie data={tresorerie} />
-    </div>
-  );
+  return <GraphiquesClient ca={ca} tresorerie={tresorerie} />;
 }

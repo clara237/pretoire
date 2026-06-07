@@ -13,10 +13,7 @@ import {
   type ValeursStagiaire,
 } from "../../_components/stagiaire-form";
 import { basculerActifStagiaire } from "@/lib/actions/stagiaires";
-import {
-  genererAttestationStage,
-  type DonneesAttestation,
-} from "@/lib/pdf/attestation-stage";
+import type { DonneesAttestation } from "@/lib/pdf/attestation-stage";
 
 export function StagiaireActions({
   valeurs,
@@ -36,8 +33,9 @@ export function StagiaireActions({
   const [editOuvert, setEditOuvert] = React.useState(false);
   const [bascule, setBascule] = React.useState(false);
 
-  function telechargerAttestation() {
+  async function telechargerAttestation() {
     try {
+      const { genererAttestationStage } = await import("@/lib/pdf/attestation-stage");
       genererAttestationStage(cabinet, attestation);
     } catch {
       toast.error("Impossible de générer l'attestation.");

@@ -17,7 +17,7 @@ import {
   supprimerDossier,
   type DonneesDossier,
 } from "@/lib/actions/dossiers";
-import { genererFicheDossier, type DonneesFicheDossier } from "@/lib/pdf/fiche-dossier";
+import type { DonneesFicheDossier } from "@/lib/pdf/fiche-dossier";
 import {
   DossierEditForm,
   type OptionSimple,
@@ -66,8 +66,9 @@ export function DossierActions({
     router.refresh();
   }
 
-  function exporterPdf() {
+  async function exporterPdf() {
     try {
+      const { genererFicheDossier } = await import("@/lib/pdf/fiche-dossier");
       genererFicheDossier(cabinet, fiche);
       toast.success("Fiche PDF générée.");
     } catch {

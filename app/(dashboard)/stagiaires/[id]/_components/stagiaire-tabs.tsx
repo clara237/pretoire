@@ -17,10 +17,7 @@ import { OngletPresences, type Presence } from "./onglet-presences";
 import { OngletEvaluations } from "./onglet-evaluations";
 import { OngletDossiers, type DossierAssigne, type OptionDossier } from "./onglet-dossiers";
 import type { Evaluation } from "@/lib/actions/stagiaires";
-import {
-  genererAttestationStage,
-  type DonneesAttestation,
-} from "@/lib/pdf/attestation-stage";
+import type { DonneesAttestation } from "@/lib/pdf/attestation-stage";
 
 export interface ProfilStagiaire {
   universite: string | null;
@@ -63,8 +60,9 @@ export function StagiaireTabs({
 }) {
   const cabinet = useCabinet();
 
-  function telechargerAttestation() {
+  async function telechargerAttestation() {
     try {
+      const { genererAttestationStage } = await import("@/lib/pdf/attestation-stage");
       genererAttestationStage(cabinet, attestation);
     } catch {
       toast.error("Impossible de générer l'attestation.");
