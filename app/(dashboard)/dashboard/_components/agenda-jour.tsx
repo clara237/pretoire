@@ -6,26 +6,11 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import { Badge, type BadgeTon } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { formatTime, formatDateLongue } from "@/lib/utils";
-
-const LIBELLE_TYPE: Record<string, string> = {
-  rdv: "Rendez-vous",
-  audience: "Audience",
-  reunion: "Réunion",
-  deadline: "Échéance",
-  deplacement: "Déplacement",
-};
-
-const TON_TYPE: Record<string, BadgeTon> = {
-  rdv: "principal",
-  audience: "danger",
-  reunion: "info",
-  deadline: "avertissement",
-  deplacement: "neutre",
-};
+import { LIBELLE_TYPE, TON_TYPE } from "../../agenda/_lib/evenements";
 
 export async function AgendaJour() {
   const supabase = createClient();

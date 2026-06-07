@@ -6,26 +6,11 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import { Badge, type BadgeTon } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
-
-const TON_STATUT: Record<string, BadgeTon> = {
-  ouvert: "info",
-  en_cours: "principal",
-  suspendu: "avertissement",
-  cloture: "succes",
-  archive: "neutre",
-};
-
-const LIBELLE_STATUT: Record<string, string> = {
-  ouvert: "Ouvert",
-  en_cours: "En cours",
-  suspendu: "Suspendu",
-  cloture: "Clôturé",
-  archive: "Archivé",
-};
+import { LIBELLE_STATUT, TON_STATUT } from "@/lib/queries/dossiers-labels";
 
 export async function DossiersRecents() {
   const supabase = createClient();

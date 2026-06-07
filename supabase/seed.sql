@@ -22,6 +22,7 @@ begin;
 -- ---------------------------------------------------------------------
 delete from paiements;
 delete from saisies_temps;
+delete from devis;
 delete from factures;
 delete from actes_procedure;
 delete from parties;
@@ -42,6 +43,8 @@ delete from clients;
 -- Réinitialisation des séquences de numérotation
 select setval('seq_dossier_2026', 1, false);
 select setval('seq_facture_2026', 1, false);
+create sequence if not exists seq_dev_2026 start 1;
+select setval('seq_dev_2026', 1, false);
 
 -- ---------------------------------------------------------------------
 -- CABINET_CONFIG (white-label) — données Cabinet Maître Kengni Christophe
@@ -78,9 +81,9 @@ insert into cabinet_config (
 -- CLIENTS (6 : 3 physiques + 3 morales)
 -- ---------------------------------------------------------------------
 insert into clients (id, type, nom, prenom, raison_sociale, email, telephone, adresse, ville, cni_numero, rccm_numero, notes) values
-  ('c1000000-0000-0000-0000-000000000001','physique','Mbarga','Jean-Pierre',null,'jp.mbarga@gmail.com','+237 699 001 122','Rue 1.234, Bastos','Yaoundé','11223344','Client de longue date.'),
-  ('c1000000-0000-0000-0000-000000000002','physique','Tchatchou','Solange',null,'solange.t@yahoo.fr','+237 677 334 455','Akwa Nord','Douala','55667788',null),
-  ('c1000000-0000-0000-0000-000000000003','physique','Ndiaye','Amadou',null,'a.ndiaye@outlook.com','+237 690 778 899','Quartier Tsinga','Yaoundé','99887766','Litige successoral en cours.'),
+  ('c1000000-0000-0000-0000-000000000001','physique','Mbarga','Jean-Pierre',null,'jp.mbarga@gmail.com','+237 699 001 122','Rue 1.234, Bastos','Yaoundé','11223344',null,'Client de longue date.'),
+  ('c1000000-0000-0000-0000-000000000002','physique','Tchatchou','Solange',null,'solange.t@yahoo.fr','+237 677 334 455','Akwa Nord','Douala','55667788',null,null),
+  ('c1000000-0000-0000-0000-000000000003','physique','Ndiaye','Amadou',null,'a.ndiaye@outlook.com','+237 690 778 899','Quartier Tsinga','Yaoundé','99887766',null,'Litige successoral en cours.'),
   ('c1000000-0000-0000-0000-000000000004','morale',null,null,'SARL BâtiPlus','contact@batiplus.cm','+237 233 445 566','Zone industrielle Bonabéri','Douala',null,'RC/DLA/2015/B/1234','Société de BTP.'),
   ('c1000000-0000-0000-0000-000000000005','morale',null,null,'Établissements Foka & Fils','info@fokafils.cm','+237 233 112 233','Marché Mokolo','Yaoundé',null,'RC/YDE/2010/A/5678',null),
   ('c1000000-0000-0000-0000-000000000006','morale',null,null,'AgroCam SA','direction@agrocam.cm','+237 233 778 800','Avenue Kennedy','Yaoundé',null,'RC/YDE/2018/B/9012','Contentieux commercial OHADA.');
@@ -203,6 +206,14 @@ insert into paiements (facture_id, date_paiement, montant, mode_paiement, refere
   ('f1000000-0000-0000-0000-000000000002','2026-04-25',1500000,'virement','VIR-2026-0418');
 
 -- ---------------------------------------------------------------------
+-- DEVIS (3 — statuts variés) + numéros explicites
+-- ---------------------------------------------------------------------
+insert into devis (id, numero, client_id, dossier_id, objet, date_emission, date_validite, montant_ht, tva, montant_ttc, statut, notes, facture_id, created_by) values
+  ('e1000000-0000-0000-0000-000000000001','DEV-2026-001','c1000000-0000-0000-0000-000000000001','d1000000-0000-0000-0000-000000000001','Honoraires de représentation — litige bail commercial.','2026-05-01','2026-05-31',2000000,0,2000000,'envoye','Devis transmis au client pour validation.',null,'aaaaaaaa-0000-0000-0000-000000000001'),
+  ('e1000000-0000-0000-0000-000000000002','DEV-2026-002','c1000000-0000-0000-0000-000000000006','d1000000-0000-0000-0000-000000000003','Provision sur procédure de recouvrement OHADA.','2026-04-15','2026-05-15',3500000,0,3500000,'accepte','Accepté par le client — facturation à venir.',null,'aaaaaaaa-0000-0000-0000-000000000001'),
+  ('e1000000-0000-0000-0000-000000000003','DEV-2026-003','c1000000-0000-0000-0000-000000000004','d1000000-0000-0000-0000-000000000004','Honoraires conseil — conflit social.','2026-06-01','2026-07-01',1800000,0,1800000,'brouillon','Brouillon — à compléter.',null,'aaaaaaaa-0000-0000-0000-000000000001');
+
+-- ---------------------------------------------------------------------
 -- SAISIES DE TEMPS (20)
 -- ---------------------------------------------------------------------
 insert into saisies_temps (profile_id, dossier_id, date, type_tache, description, duree_heures, taux_horaire, facturable, facture_id) values
@@ -252,10 +263,10 @@ insert into modeles_documents (nom, categorie, description, uploaded_by, actif) 
 -- DOCUMENTS (liés à des dossiers)
 -- ---------------------------------------------------------------------
 insert into documents (nom, type, dossier_id, uploaded_by, fichier_url, taille_ko) values
-  ('Assignation_Mbarga.pdf','application/pdf','d1000000-0000-0000-0000-000000000001','aaaaaaaa-0000-0000-0000-000000000001','documents/demo/assignation_mbarga.pdf',240),
-  ('Conclusions_demande.pdf','application/pdf','d1000000-0000-0000-0000-000000000001','aaaaaaaa-0000-0000-0000-000000000003','documents/demo/conclusions_demande.pdf',180),
-  ('Contrat_litigieux.pdf','application/pdf','d1000000-0000-0000-0000-000000000003','aaaaaaaa-0000-0000-0000-000000000001','documents/demo/contrat_agrocam.pdf',320),
-  ('Jugement_BatiPlus.pdf','application/pdf','d1000000-0000-0000-0000-000000000008','aaaaaaaa-0000-0000-0000-000000000003','documents/demo/jugement_batiplus.pdf',210);
+  ('Assignation_Mbarga.pdf','application/pdf','d1000000-0000-0000-0000-000000000001','aaaaaaaa-0000-0000-0000-000000000001','demo/assignation_mbarga.pdf',240),
+  ('Conclusions_demande.pdf','application/pdf','d1000000-0000-0000-0000-000000000001','aaaaaaaa-0000-0000-0000-000000000003','demo/conclusions_demande.pdf',180),
+  ('Contrat_litigieux.pdf','application/pdf','d1000000-0000-0000-0000-000000000003','aaaaaaaa-0000-0000-0000-000000000001','demo/contrat_agrocam.pdf',320),
+  ('Jugement_BatiPlus.pdf','application/pdf','d1000000-0000-0000-0000-000000000008','aaaaaaaa-0000-0000-0000-000000000003','demo/jugement_batiplus.pdf',210);
 
 -- ---------------------------------------------------------------------
 -- COURRIERS (correspondance)

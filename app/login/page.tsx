@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getCabinetConfig } from "@/lib/cabinet";
 import { LogoBarreauCameroun } from "@/components/logos/barreau-cameroun";
@@ -37,7 +38,9 @@ export default async function LoginPage() {
               Accédez à votre espace de gestion du cabinet.
             </p>
           </div>
-          <LoginForm />
+          <Suspense fallback={<div className="h-64" />}>
+            <LoginForm />
+          </Suspense>
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">

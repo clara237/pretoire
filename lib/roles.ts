@@ -215,6 +215,7 @@ export function sectionForPath(pathname: string): Section | null {
   if (pathname.startsWith("/equipe")) return "equipe";
   if (pathname.startsWith("/stagiaires")) return "stagiaires";
   if (pathname.startsWith("/time-tracking")) return "time_tracking";
+  if (pathname.startsWith("/devis")) return "facturation";
   if (pathname.startsWith("/facturation")) return "facturation";
   if (pathname.startsWith("/finance")) return "finance";
   if (pathname.startsWith("/documents")) return "documents";

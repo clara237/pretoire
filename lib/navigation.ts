@@ -10,6 +10,7 @@ import {
   Receipt,
   TrendingUp,
   FileText,
+  FileSpreadsheet,
   Files,
   Mail,
   Bell,
@@ -55,6 +56,7 @@ export const NAVIGATION: NavGroupe[] = [
     titre: "Finance",
     items: [
       { href: "/time-tracking", label: "Temps", icone: Clock, section: "time_tracking" },
+      { href: "/devis", label: "Devis", icone: FileSpreadsheet, section: "facturation" },
       { href: "/facturation", label: "Facturation", icone: Receipt, section: "facturation" },
       { href: "/finance", label: "Finances", icone: TrendingUp, section: "finance" },
     ],

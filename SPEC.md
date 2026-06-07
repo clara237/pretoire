@@ -34,7 +34,7 @@ L'administrateur système peut les modifier à tout moment depuis `/parametres/c
 - Projet Next.js 14 App Router, TypeScript, Tailwind CSS
 - Supabase : auth, storage buckets, row-level security policies
 - TOUTES les migrations de base de données (schéma complet ci-dessous)
-- Seed `cabinet_config` avec les données Cabinet Maître Kengni Christophe / Mvogbi
+- Seed `cabinet_config` avec les données Cabinet Maître Kengni Christophe
 - Authentification : login, logout, contrôle d'accès par rôle
 - Shell principal : sidebar (logo + nom cabinet dynamique), topbar, layout responsive
 - Toggle dark/light mode

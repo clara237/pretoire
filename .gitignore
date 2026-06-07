@@ -28,6 +28,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# outillage local (orchestration multi-agents, réglages éditeur)
+.claude/
+
 # vercel
 .vercel
 

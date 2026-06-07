@@ -106,16 +106,14 @@ openai_api_key = "env(OPENAI_API_KEY)"
 enabled = true
 # Port to use for the email testing server web interface.
 port = 54324
-# Uncomment to expose additional ports for testing user applications that send emails.
-# smtp_port = 54325
+# Port SMTP exposé : utilisé par l'app (lib/email.ts) pour les rappels/relances en local.
+smtp_port = 54325
 # pop3_port = 54326
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
 [storage]
-# TEMPORAIRE : désactivé car l'image storage-api ne se télécharge pas (réseau instable).
-# Réactiver (enabled = true) dès que l'image est locale — voir tâche de fond byeg8s7az.
-enabled = false
+enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 

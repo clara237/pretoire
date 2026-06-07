@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Briefcase, CalendarClock, Clock, GraduationCap } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { SkeletonStat, Skeleton } from "@/components/ui/skeleton";
 import { KpiCards } from "./_components/kpi-cards";
@@ -25,27 +24,17 @@ export default function DashboardPage() {
           </div>
         }
       >
-        {/* @ts-expect-error Async Server Component */}
         <KpiCards />
       </Suspense>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Suspense fallback={<Skeleton className="h-80 w-full rounded-lg" />}>
-          {/* @ts-expect-error Async Server Component */}
           <AgendaJour />
         </Suspense>
         <Suspense fallback={<Skeleton className="h-80 w-full rounded-lg" />}>
-          {/* @ts-expect-error Async Server Component */}
           <DossiersRecents />
         </Suspense>
       </div>
     </div>
   );
 }
-
-export const ICONES_KPI = {
-  dossiers: Briefcase,
-  rdv: CalendarClock,
-  heures: Clock,
-  stagiaires: GraduationCap,
-};

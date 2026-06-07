@@ -4,12 +4,16 @@ import { getProfilCourant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { CabinetProvider } from "@/components/providers/cabinet-provider";
 import { AppShell } from "@/components/shell/app-shell";
+import { declencherRappelsAuto } from "@/lib/rappels-auto";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Job système throttlé (échéances + factures échues) — non bloquant.
+  declencherRappelsAuto();
+
   const [cabinet, profil] = await Promise.all([
     getCabinetConfig(),
     getProfilCourant(),
