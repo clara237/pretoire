@@ -2,26 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  THÈME PRÉTOIRE — White-label
+  Les couleurs de marque (--couleur-principale / secondaire / accent) ont des
+  valeurs par défaut issues du SPEC (vert / rouge / jaune du Barreau du Cameroun)
+  mais sont surchargées dynamiquement au runtime par <ThemeStyleInjector> à partir
+  de cabinet_config. Le reste de la palette pilote le mode clair/sombre (class strategy).
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Marque (défauts SPEC) */
+  --couleur-principale: #007a5e;
+  --couleur-principale-foreground: #ffffff;
+  --couleur-secondaire: #ce1126;
+  --couleur-accent: #fcd116;
+
+  /* Palette claire */
+  --background: #f7f8f8;
+  --foreground: #1a1d1c;
+  --card: #ffffff;
+  --card-foreground: #1a1d1c;
+  --muted: #eef0ef;
+  --muted-foreground: #5f6766;
+  --border: #e2e5e4;
+  --input: #e2e5e4;
+  --ring: var(--couleur-principale);
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #ce1126;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0d1110;
+  --foreground: #e8eae9;
+  --card: #161b1a;
+  --card-foreground: #e8eae9;
+  --muted: #1f2625;
+  --muted-foreground: #9aa3a1;
+  --border: #2a3231;
+  --input: #2a3231;
+  --ring: var(--couleur-principale);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --couleur-principale-foreground: #ffffff;
+}
+
+* {
+  border-color: var(--border);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Scrollbar discrète */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }
