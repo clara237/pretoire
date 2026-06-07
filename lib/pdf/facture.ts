@@ -12,6 +12,7 @@ import {
   LIBELLE_STATUT_FACTURE,
   LIBELLE_MODE_PAIEMENT,
   LIBELLE_TYPE_TACHE,
+  LIBELLE_CATEGORIE_LIGNE,
 } from "@/lib/finance-constants";
 
 export interface LignePdfFacture {
@@ -20,6 +21,14 @@ export interface LignePdfFacture {
   description: string | null;
   duree_heures: number;
   taux_horaire: number | null;
+}
+
+export interface LigneManuellePdfFacture {
+  libelle: string;
+  categorie: string;
+  quantite: number;
+  montant_unitaire: number;
+  montant: number;
 }
 
 export interface PaiementPdf {
@@ -44,6 +53,7 @@ export interface DonneesFacturePdf {
   numeroDossier: string | null;
   intituleDossier: string | null;
   lignes: LignePdfFacture[];
+  lignesManuelles?: LigneManuellePdfFacture[];
   paiements: PaiementPdf[];
 }
 
@@ -94,7 +104,23 @@ export function genererFacture(
   setCurseurY(doc, y + 4);
 
   // --- Lignes de détail ---------------------------------------------
-  if (f.lignes.length > 0) {
+  if (f.lignesManuelles && f.lignesManuelles.length > 0) {
+    ajouterTableau(ctx, {
+      head: [["Désignation", "Catégorie", "Qté", "P.U.", "Montant"]],
+      body: f.lignesManuelles.map((l) => [
+        l.libelle,
+        LIBELLE_CATEGORIE_LIGNE[l.categorie] ?? l.categorie,
+        String(l.quantite),
+        formatFCFA(l.montant_unitaire, devise),
+        formatFCFA(l.montant, devise),
+      ]),
+      columnStyles: {
+        2: { halign: "right", cellWidth: 16 },
+        3: { halign: "right", cellWidth: 28 },
+        4: { halign: "right", cellWidth: 30 },
+      },
+    });
+  } else if (f.lignes.length > 0) {
     ajouterTableau(ctx, {
       head: [["Date", "Prestation", "Durée", "Taux", "Montant"]],
       body: f.lignes.map((l) => {

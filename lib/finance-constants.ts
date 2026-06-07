@@ -66,6 +66,7 @@ export const MODES_PAIEMENT = [
   "virement",
   "mobile_money",
   "cheque",
+  "nature",
 ] as const;
 export type ModePaiement = (typeof MODES_PAIEMENT)[number];
 
@@ -74,6 +75,33 @@ export const LIBELLE_MODE_PAIEMENT: Record<string, string> = {
   virement: "Virement",
   mobile_money: "Mobile Money",
   cheque: "Chèque",
+  nature: "En nature (matériel)",
+};
+
+// ---- Catégories de ligne de facture (mode détaillé) --------------------
+export const CATEGORIES_LIGNE_FACTURE = [
+  "ouverture",
+  "honoraires",
+  "deplacement",
+  "debours",
+  "autre",
+] as const;
+export type CategorieLigneFacture = (typeof CATEGORIES_LIGNE_FACTURE)[number];
+
+export const LIBELLE_CATEGORIE_LIGNE: Record<string, string> = {
+  ouverture: "Frais d'ouverture",
+  honoraires: "Honoraires",
+  deplacement: "Déplacement",
+  debours: "Débours (timbres, certifications…)",
+  autre: "Autre",
+};
+
+export const TON_CATEGORIE_LIGNE: Record<string, BadgeTon> = {
+  ouverture: "info",
+  honoraires: "principal",
+  deplacement: "avertissement",
+  debours: "neutre",
+  autre: "neutre",
 };
 
 // ---- Types de tâche (time tracking) ------------------------------------

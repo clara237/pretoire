@@ -5,7 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getCabinetConfig } from "@/lib/cabinet";
 import { getProfilCourant } from "@/lib/auth";
 import { canEdit } from "@/lib/roles";
-import { STATUTS_FACTURE, MODES_PAIEMENT } from "@/lib/finance-constants";
+import {
+  STATUTS_FACTURE,
+  MODES_PAIEMENT,
+  CATEGORIES_LIGNE_FACTURE,
+} from "@/lib/finance-constants";
 import { envoyerEmail } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Enums } from "@/lib/database.types";
@@ -286,6 +290,98 @@ export async function creerFactureMontant(
   revalidatePath("/facturation");
   revalidatePath("/finance");
   return { ok: true, id: (data as { id: string }).id };
+}
+
+export interface LigneFactureSaisie {
+  libelle: string;
+  categorie: string;
+  quantite: number;
+  montant_unitaire: number;
+}
+
+/**
+ * Crée une facture « détaillée » à partir de lignes libres saisies par
+ * l'admin : frais d'ouverture, déplacements, honoraires, débours (timbres,
+ * certifications, certificats…). Le montant HT = somme des lignes.
+ */
+export async function creerFactureLignes(
+  base: DonneesFactureBase & { lignes: LigneFactureSaisie[] },
+): Promise<ResultatAction> {
+  const profil = await getProfilCourant();
+  if (!profil || !canEdit(profil.role, "facturation")) {
+    return { ok: false, message: "Accès refusé." };
+  }
+  if (!base.date_emission) {
+    return { ok: false, message: "La date d'émission est obligatoire." };
+  }
+
+  // Nettoyage + validation des lignes
+  const categoriesOk = new Set(CATEGORIES_LIGNE_FACTURE as readonly string[]);
+  const lignes = (base.lignes ?? [])
+    .map((l) => {
+      const libelle = (l.libelle ?? "").trim();
+      const quantite = Math.max(0, Number(l.quantite) || 0);
+      const pu = Math.round(Number(l.montant_unitaire) || 0);
+      const categorie = categoriesOk.has(l.categorie) ? l.categorie : "autre";
+      return { libelle, categorie, quantite, montant_unitaire: pu, montant: Math.round(quantite * pu) };
+    })
+    .filter((l) => l.libelle && l.montant > 0);
+
+  if (lignes.length === 0) {
+    return { ok: false, message: "Ajoutez au moins une ligne valide (libellé + montant)." };
+  }
+
+  const supabase = createClient();
+  const cabinet = await getCabinetConfig();
+  const totalHt = lignes.reduce((s, l) => s + l.montant, 0);
+  const montants = calculerMontants(totalHt, cabinet.tva_applicable, cabinet.taux_tva);
+  const annee = new Date(base.date_emission).getFullYear() || new Date().getFullYear();
+  const numero = await prochainNumeroFacture(supabase, annee);
+
+  const { data, error } = await supabase
+    .from("factures")
+    .insert({
+      numero,
+      client_id: nettoyer(base.client_id ?? null),
+      dossier_id: nettoyer(base.dossier_id ?? null),
+      date_emission: base.date_emission,
+      date_echeance: nettoyer(base.date_echeance ?? null),
+      montant_ht: montants.montant_ht,
+      tva: montants.tva,
+      montant_ttc: montants.montant_ttc,
+      devise: cabinet.devise || "FCFA",
+      statut: "brouillon",
+      notes: nettoyer(base.notes ?? null),
+      created_by: profil.id,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return { ok: false, message: "Impossible de créer la facture." };
+  }
+  const factureId = (data as { id: string }).id;
+
+  const { error: errLignes } = await supabase.from("lignes_facture").insert(
+    lignes.map((l, i) => ({
+      facture_id: factureId,
+      libelle: l.libelle,
+      categorie: l.categorie,
+      quantite: l.quantite,
+      montant_unitaire: l.montant_unitaire,
+      montant: l.montant,
+      ordre: i,
+    })),
+  );
+  if (errLignes) {
+    // La facture sans lignes serait incohérente : on la supprime.
+    await supabase.from("factures").delete().eq("id", factureId);
+    return { ok: false, message: "Impossible d'enregistrer les lignes de la facture." };
+  }
+
+  revalidatePath("/facturation");
+  revalidatePath("/finance");
+  return { ok: true, id: factureId };
 }
 
 /** Change manuellement le statut d'une facture. */

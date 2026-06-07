@@ -265,12 +265,15 @@ points suivants sont des contournements applicatifs assumés, à lever par une
   l'indicateur « objectif vs réalisé » utilise une constante
   `OBJECTIF_HEURES_MENSUEL = 120` (`app/(dashboard)/equipe/_lib/charge.ts`).
   *Évolution* : externaliser dans `cabinet_config` ou par profil.
-- **Lignes de facture.** Pas de table `lignes_facture` : les lignes d'une
-  facture sont **dérivées des `saisies_temps`** rattachées (`facture_id`). Une
-  facture à honoraires fixes / provision n'a donc qu'une ligne unique
-  « Honoraires » (`montant_ht` saisi directement). On ne peut pas ajouter de
-  lignes manuelles arbitraires — conforme à la SPEC (2 modes : depuis le temps
-  OU montant fixe).
+- **Facturation — 3 modes.** Une facture peut être construite : (1) **depuis les
+  heures** saisies (`saisies_temps` rattachées via `facture_id`) ; (2) **montant
+  forfaitaire** (honoraires fixes / provision) ; (3) **lignes détaillées**
+  (table `lignes_facture`) — l'admin compose la facture ligne par ligne :
+  frais d'ouverture (montant par défaut configurable dans `cabinet_config`),
+  déplacements, honoraires, débours refacturés (timbres, certifications,
+  certificats…), chaque ligne catégorisée. Les **paiements en nature**
+  (terrain, véhicule…) sont gérés via le mode de paiement `nature` avec une
+  valeur estimée qui réduit le solde dû.
 - **Numérotation `DOS-AAAA-001` / `FACT-AAAA-001`.** Calculée côté application
   (max existant de l'année + 1) plutôt que via la RPC `prochain_numero` (qui
   s'appuie sur une séquence non avancée par le seed → risque de collision). La

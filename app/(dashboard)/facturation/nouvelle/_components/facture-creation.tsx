@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clock, Banknote } from "lucide-react";
+import { Clock, Banknote, ListPlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Field } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,15 +13,33 @@ import { cn, formatFCFA, formatDate, formatHeures } from "@/lib/utils";
 import {
   creerFactureDepuisTemps,
   creerFactureMontant,
+  creerFactureLignes,
   chargerSaisiesFacturables,
   type SaisieFacturableLigne,
 } from "@/lib/actions/factures";
-import { LIBELLE_TYPE_TACHE as LIBELLE_TACHE } from "@/lib/finance-constants";
+import {
+  LIBELLE_TYPE_TACHE as LIBELLE_TACHE,
+  CATEGORIES_LIGNE_FACTURE,
+  LIBELLE_CATEGORIE_LIGNE,
+} from "@/lib/finance-constants";
 
 interface Option {
   value: string;
   label: string;
 }
+
+interface LigneSaisie {
+  libelle: string;
+  categorie: string;
+  quantite: string;
+  montant_unitaire: string;
+}
+
+// Options de catégorie pour le mode « lignes détaillées ».
+const OPTIONS_CATEGORIE: Option[] = CATEGORIES_LIGNE_FACTURE.map((c) => ({
+  value: c,
+  label: LIBELLE_CATEGORIE_LIGNE[c],
+}));
 
 function datePlus(jours: number): string {
   const d = new Date();
@@ -35,6 +53,7 @@ export function FactureCreation({
   tvaApplicable,
   tauxTva,
   devise,
+  fraisOuverture,
   dossierParDefaut,
 }: {
   clients: Option[];
@@ -42,10 +61,11 @@ export function FactureCreation({
   tvaApplicable: boolean;
   tauxTva: number;
   devise: string;
+  fraisOuverture: number;
   dossierParDefaut?: string;
 }) {
   const router = useRouter();
-  const [mode, setMode] = React.useState<"temps" | "montant">("temps");
+  const [mode, setMode] = React.useState<"temps" | "montant" | "lignes">("temps");
   const [chargement, setChargement] = React.useState(false);
 
   // Champs communs
@@ -57,6 +77,45 @@ export function FactureCreation({
 
   // Mode montant
   const [montantHt, setMontantHt] = React.useState("");
+
+  // Mode lignes détaillées
+  const [lignes, setLignes] = React.useState<LigneSaisie[]>([]);
+
+  function ajouterLigne() {
+    setLignes((l) => [
+      ...l,
+      { libelle: "", categorie: "honoraires", quantite: "1", montant_unitaire: "" },
+    ]);
+  }
+
+  function ajouterFraisOuverture() {
+    setLignes((l) => [
+      ...l,
+      {
+        libelle: "Frais d'ouverture de dossier",
+        categorie: "ouverture",
+        quantite: "1",
+        montant_unitaire: String(fraisOuverture),
+      },
+    ]);
+  }
+
+  function modifierLigne(index: number, champ: keyof LigneSaisie, valeur: string) {
+    setLignes((l) =>
+      l.map((ligne, i) => (i === index ? { ...ligne, [champ]: valeur } : ligne)),
+    );
+  }
+
+  function supprimerLigne(index: number) {
+    setLignes((l) => l.filter((_, i) => i !== index));
+  }
+
+  function montantLigne(ligne: LigneSaisie): number {
+    return (
+      (Number(ligne.quantite) || 0) *
+      (Number(String(ligne.montant_unitaire).replace(/\s/g, "")) || 0)
+    );
+  }
 
   // Mode temps
   const [saisies, setSaisies] = React.useState<SaisieFacturableLigne[]>([]);
@@ -99,7 +158,14 @@ export function FactureCreation({
     .filter((s) => selection.has(s.id))
     .reduce((acc, s) => acc + s.duree_heures * (s.taux_horaire ?? 0), 0);
 
-  const baseHt = mode === "temps" ? totalTempsHt : Number(montantHt.replace(/\s/g, "")) || 0;
+  const totalLignesHt = lignes.reduce((acc, l) => acc + montantLigne(l), 0);
+
+  const baseHt =
+    mode === "temps"
+      ? totalTempsHt
+      : mode === "lignes"
+        ? totalLignesHt
+        : Number(montantHt.replace(/\s/g, "")) || 0;
   const tvaCalc = tvaApplicable ? Math.round((baseHt * tauxTva) / 100) : 0;
   const ttc = baseHt + tvaCalc;
 
@@ -122,6 +188,31 @@ export function FactureCreation({
         date_echeance: dateEcheance || null,
         notes: notes || null,
         saisie_ids: ids,
+      });
+    } else if (mode === "lignes") {
+      const lignesValides = lignes.filter(
+        (l) => l.libelle.trim() !== "" && montantLigne(l) > 0,
+      );
+      if (lignesValides.length === 0) {
+        toast.error(
+          "Ajoutez au moins une ligne avec un libellé et un montant supérieur à zéro.",
+        );
+        setChargement(false);
+        return;
+      }
+      res = await creerFactureLignes({
+        client_id: clientId || null,
+        dossier_id: dossierId || null,
+        date_emission: dateEmission,
+        date_echeance: dateEcheance || null,
+        notes: notes || null,
+        lignes: lignes.map((l) => ({
+          libelle: l.libelle.trim(),
+          categorie: l.categorie,
+          quantite: Number(l.quantite) || 0,
+          montant_unitaire:
+            Number(String(l.montant_unitaire).replace(/\s/g, "")) || 0,
+        })),
       });
     } else {
       const montant = Number(montantHt.replace(/\s/g, ""));
@@ -167,6 +258,12 @@ export function FactureCreation({
               icone: Banknote,
               titre: "Honoraires fixes / provision",
               desc: "Saisir un montant forfaitaire ou une provision.",
+            },
+            {
+              id: "lignes" as const,
+              icone: ListPlus,
+              titre: "Lignes détaillées",
+              desc: "Composer la facture ligne par ligne : frais d'ouverture, déplacements, honoraires, débours…",
             },
           ]
         ).map((m) => {
@@ -300,6 +397,109 @@ export function FactureCreation({
             required
           />
         </Field>
+      )}
+
+      {/* Mode lignes détaillées */}
+      {mode === "lignes" && (
+        <div className="space-y-3">
+          {lignes.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-8 text-center text-sm text-muted-foreground">
+              Aucune ligne pour le moment. Ajoutez une ligne ou les frais
+              d&apos;ouverture pour composer la facture.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {lignes.map((ligne, index) => (
+                <div
+                  key={index}
+                  className="flex flex-wrap items-end gap-2 rounded-lg border border-border p-3"
+                >
+                  <div className="min-w-[12rem] flex-1">
+                    <Field label="Libellé" htmlFor={`ligne-libelle-${index}`}>
+                      <Input
+                        id={`ligne-libelle-${index}`}
+                        value={ligne.libelle}
+                        onChange={(e) =>
+                          modifierLigne(index, "libelle", e.target.value)
+                        }
+                        placeholder="Description de la prestation"
+                      />
+                    </Field>
+                  </div>
+                  <div className="w-44">
+                    <Field label="Catégorie" htmlFor={`ligne-categorie-${index}`}>
+                      <Select
+                        id={`ligne-categorie-${index}`}
+                        value={ligne.categorie}
+                        onChange={(e) =>
+                          modifierLigne(index, "categorie", e.target.value)
+                        }
+                        options={OPTIONS_CATEGORIE}
+                      />
+                    </Field>
+                  </div>
+                  <div className="w-20">
+                    <Field label="Qté" htmlFor={`ligne-quantite-${index}`}>
+                      <Input
+                        id={`ligne-quantite-${index}`}
+                        inputMode="numeric"
+                        value={ligne.quantite}
+                        onChange={(e) =>
+                          modifierLigne(index, "quantite", e.target.value)
+                        }
+                        placeholder="1"
+                      />
+                    </Field>
+                  </div>
+                  <div className="w-32">
+                    <Field
+                      label="Montant unit."
+                      htmlFor={`ligne-pu-${index}`}
+                    >
+                      <Input
+                        id={`ligne-pu-${index}`}
+                        inputMode="numeric"
+                        value={ligne.montant_unitaire}
+                        onChange={(e) =>
+                          modifierLigne(index, "montant_unitaire", e.target.value)
+                        }
+                        placeholder="0"
+                      />
+                    </Field>
+                  </div>
+                  <div className="min-w-[6rem] pb-2 text-right">
+                    <p className="text-xs text-muted-foreground">Montant</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {formatFCFA(montantLigne(ligne), devise)}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variante="fantome"
+                    taille="icone"
+                    onClick={() => supprimerLigne(index)}
+                    aria-label="Supprimer la ligne"
+                    className="mb-1"
+                  >
+                    <Trash2 className="h-4 w-4 text-danger" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variante="contour" onClick={ajouterLigne}>
+              + Ajouter une ligne
+            </Button>
+            <Button
+              type="button"
+              variante="contour"
+              onClick={ajouterFraisOuverture}
+            >
+              + Frais d&apos;ouverture ({formatFCFA(fraisOuverture, devise)})
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Dates */}

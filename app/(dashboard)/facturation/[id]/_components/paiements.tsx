@@ -69,6 +69,8 @@ export function Paiements({
   const [aSupprimer, setASupprimer] = React.useState<PaiementVue | null>(null);
   const [suppressionEnCours, setSuppressionEnCours] = React.useState(false);
 
+  const enNature = form.mode_paiement === "nature";
+
   function maj<K extends keyof typeof form>(cle: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [cle]: v }));
   }
@@ -214,7 +216,16 @@ export function Paiements({
                 required
               />
             </Field>
-            <Field label="Montant (FCFA)" htmlFor="montant" requis aide={`Solde dû : ${formatFCFA(solde, devise)}`}>
+            <Field
+              label={enNature ? "Valeur estimée (FCFA)" : "Montant (FCFA)"}
+              htmlFor="montant"
+              requis
+              aide={
+                enNature
+                  ? `Valeur estimée du bien remis — réduit le solde dû (${formatFCFA(solde, devise)}).`
+                  : `Solde dû : ${formatFCFA(solde, devise)}`
+              }
+            >
               <Input
                 id="montant"
                 inputMode="numeric"
@@ -236,12 +247,24 @@ export function Paiements({
               }))}
             />
           </Field>
-          <Field label="Référence" htmlFor="reference" aide="N° de virement, chèque, transaction Mobile Money…">
+          <Field
+            label={enNature ? "Bien remis" : "Référence"}
+            htmlFor="reference"
+            aide={
+              enNature
+                ? "Décrivez le bien remis en paiement."
+                : "N° de virement, chèque, transaction Mobile Money…"
+            }
+          >
             <Input
               id="reference"
               value={form.reference}
               onChange={(e) => maj("reference", e.target.value)}
-              placeholder="VIR-2026-0312"
+              placeholder={
+                enNature
+                  ? "Bien remis : terrain, véhicule…"
+                  : "VIR-2026-0312"
+              }
             />
           </Field>
           <Field label="Notes" htmlFor="notes_paiement">

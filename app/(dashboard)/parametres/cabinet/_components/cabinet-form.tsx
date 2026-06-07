@@ -404,6 +404,22 @@ export function CabinetForm({ cabinet }: { cabinet: CabinetConfig }) {
                   </Field>
 
                   <Field
+                    label="Frais d'ouverture de dossier"
+                    htmlFor="frais_ouverture_dossier"
+                    aide="Montant pré-rempli au clic sur « Frais d'ouverture » lors d'une facture détaillée."
+                  >
+                    <Input
+                      id="frais_ouverture_dossier"
+                      name="frais_ouverture_dossier"
+                      type="number"
+                      min={0}
+                      step={1000}
+                      defaultValue={cabinet.frais_ouverture_dossier ?? 50000}
+                      placeholder="50000"
+                    />
+                  </Field>
+
+                  <Field
                     label="Pied de page des factures"
                     htmlFor="pied_de_page_facture"
                     aide="Mentions légales, conditions de règlement, RIB…"

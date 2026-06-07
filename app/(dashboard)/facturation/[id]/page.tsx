@@ -25,6 +25,10 @@ import {
   TON_STATUT_FACTURE,
   LIBELLE_TYPE_TACHE,
 } from "@/lib/queries/finance";
+import {
+  LIBELLE_CATEGORIE_LIGNE,
+  TON_CATEGORIE_LIGNE,
+} from "@/lib/finance-constants";
 import { FacturePdfBouton } from "./_components/facture-pdf-bouton";
 import {
   FactureStatutSelect,
@@ -78,6 +82,13 @@ export default async function FactureDetailPage({
       description: l.description,
       duree_heures: l.duree_heures,
       taux_horaire: l.taux_horaire,
+    })),
+    lignesManuelles: facture.lignesManuelles.map((l) => ({
+      libelle: l.libelle,
+      categorie: l.categorie,
+      quantite: l.quantite,
+      montant_unitaire: l.montant_unitaire,
+      montant: l.montant,
     })),
     paiements: facture.paiements.map((p) => ({
       date_paiement: p.date_paiement,
@@ -148,7 +159,42 @@ export default async function FactureDetailPage({
               <CardTitle className="text-base">Détail</CardTitle>
             </CardHeader>
             <CardContent>
-              {facture.lignes.length > 0 ? (
+              {facture.lignesManuelles.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Désignation</TableHead>
+                      <TableHead>Catégorie</TableHead>
+                      <TableHead className="text-right">Qté</TableHead>
+                      <TableHead className="text-right">P.U.</TableHead>
+                      <TableHead className="text-right">Montant</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {facture.lignesManuelles.map((l) => (
+                      <TableRow key={l.id}>
+                        <TableCell className="text-sm font-medium text-foreground">
+                          {l.libelle}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <Badge ton={TON_CATEGORIE_LIGNE[l.categorie] ?? "neutre"}>
+                            {LIBELLE_CATEGORIE_LIGNE[l.categorie] ?? l.categorie}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {l.quantite}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {formatFCFA(l.montant_unitaire, devise)}
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-medium">
+                          {formatFCFA(l.montant, devise)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : facture.lignes.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>

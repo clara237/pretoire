@@ -91,6 +91,7 @@ export type Database = {
           devise: string
           email: string | null
           format_date: string
+          frais_ouverture_dossier: number
           id: string
           logo_url: string | null
           nom_avocat_principal: string | null
@@ -115,6 +116,7 @@ export type Database = {
           devise?: string
           email?: string | null
           format_date?: string
+          frais_ouverture_dossier?: number
           id?: string
           logo_url?: string | null
           nom_avocat_principal?: string | null
@@ -139,6 +141,7 @@ export type Database = {
           devise?: string
           email?: string | null
           format_date?: string
+          frais_ouverture_dossier?: number
           id?: string
           logo_url?: string | null
           nom_avocat_principal?: string | null
@@ -767,6 +770,50 @@ export type Database = {
           },
         ]
       }
+      lignes_facture: {
+        Row: {
+          categorie: string
+          created_at: string | null
+          facture_id: string
+          id: string
+          libelle: string
+          montant: number
+          montant_unitaire: number
+          ordre: number
+          quantite: number
+        }
+        Insert: {
+          categorie?: string
+          created_at?: string | null
+          facture_id: string
+          id?: string
+          libelle: string
+          montant?: number
+          montant_unitaire?: number
+          ordre?: number
+          quantite?: number
+        }
+        Update: {
+          categorie?: string
+          created_at?: string | null
+          facture_id?: string
+          id?: string
+          libelle?: string
+          montant?: number
+          montant_unitaire?: number
+          ordre?: number
+          quantite?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lignes_facture_facture_id_fkey"
+            columns: ["facture_id"]
+            isOneToOne: false
+            referencedRelation: "factures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modeles_documents: {
         Row: {
           actif: boolean
@@ -1177,7 +1224,12 @@ export type Database = {
       stagiaire_voit_dossier: { Args: { d_id: string }; Returns: boolean }
     }
     Enums: {
-      mode_paiement: "especes" | "virement" | "mobile_money" | "cheque"
+      mode_paiement:
+        | "especes"
+        | "virement"
+        | "mobile_money"
+        | "cheque"
+        | "nature"
       role_utilisateur:
         | "admin_systeme"
         | "associe_principal"
@@ -1347,7 +1399,13 @@ export const Constants = {
   },
   public: {
     Enums: {
-      mode_paiement: ["especes", "virement", "mobile_money", "cheque"],
+      mode_paiement: [
+        "especes",
+        "virement",
+        "mobile_money",
+        "cheque",
+        "nature",
+      ],
       role_utilisateur: [
         "admin_systeme",
         "associe_principal",

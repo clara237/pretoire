@@ -23,6 +23,7 @@ export interface CabinetConfig {
   taux_tva: number;
   devise: string;
   format_date: string;
+  frais_ouverture_dossier: number;
   updated_at: string | null;
   updated_by: string | null;
 }
@@ -49,6 +50,7 @@ export const CABINET_DEFAUT: CabinetConfig = {
   taux_tva: 0,
   devise: "FCFA",
   format_date: "JJ/MM/AAAA",
+  frais_ouverture_dossier: 50000,
   updated_at: null,
   updated_by: null,
 };

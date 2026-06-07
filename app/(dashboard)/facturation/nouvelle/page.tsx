@@ -46,6 +46,7 @@ export default async function NouvelleFacturePage({
             tvaApplicable={cabinet.tva_applicable}
             tauxTva={cabinet.taux_tva}
             devise={cabinet.devise || "FCFA"}
+            fraisOuverture={cabinet.frais_ouverture_dossier ?? 50000}
             dossierParDefaut={searchParams.dossier}
           />
         </CardContent>

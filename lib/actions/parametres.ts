@@ -158,6 +158,16 @@ export async function enregistrerCabinet(
     tauxTva = n;
   }
 
+  const fraisBrut = nettoyer(form.get("frais_ouverture_dossier"));
+  let fraisOuverture = 0;
+  if (fraisBrut) {
+    const n = Number(fraisBrut.replace(/\s/g, "").replace(",", "."));
+    if (Number.isNaN(n) || n < 0) {
+      return { ok: false, message: "Les frais d'ouverture sont invalides." };
+    }
+    fraisOuverture = Math.round(n);
+  }
+
   const valeurs = {
     nom_cabinet: nomCabinet,
     nom_avocat_principal: nettoyer(form.get("nom_avocat_principal")),
@@ -181,6 +191,7 @@ export async function enregistrerCabinet(
     pied_de_page_facture: nettoyer(form.get("pied_de_page_facture")),
     tva_applicable: tvaApplicable,
     taux_tva: tauxTva,
+    frais_ouverture_dossier: fraisOuverture,
     devise: nettoyer(form.get("devise")) ?? "FCFA",
     format_date: nettoyer(form.get("format_date")) ?? "JJ/MM/AAAA",
     updated_by: profil.id,

@@ -198,12 +198,24 @@ insert into factures (id, numero, client_id, dossier_id, date_emission, date_ech
   ('f1000000-0000-0000-0000-000000000007','FACT-2026-007','c1000000-0000-0000-0000-000000000003','d1000000-0000-0000-0000-000000000005','2026-03-20','2026-04-19',1800000,0,1800000,'payee','Honoraires phase d''instruction.','aaaaaaaa-0000-0000-0000-000000000002'),
   ('f1000000-0000-0000-0000-000000000008','FACT-2026-008','c1000000-0000-0000-0000-000000000004','d1000000-0000-0000-0000-000000000010','2026-06-01','2026-07-01',900000,0,900000,'brouillon','Brouillon — à valider.','aaaaaaaa-0000-0000-0000-000000000001');
 
--- PAIEMENTS (sur factures payées / partielle)
-insert into paiements (facture_id, date_paiement, montant, mode_paiement, reference) values
-  ('f1000000-0000-0000-0000-000000000001','2026-03-15',1500000,'virement','VIR-2026-0312'),
-  ('f1000000-0000-0000-0000-000000000003','2026-03-10',2000000,'cheque','CHQ-001245'),
-  ('f1000000-0000-0000-0000-000000000007','2026-04-05',1800000,'mobile_money','MOMO-778899'),
-  ('f1000000-0000-0000-0000-000000000002','2026-04-25',1500000,'virement','VIR-2026-0418');
+-- Facture DÉTAILLÉE (lignes libres) : frais d'ouverture + déplacement +
+-- honoraires + débours refacturés (timbres, certifications…)
+insert into factures (id, numero, client_id, dossier_id, date_emission, date_echeance, montant_ht, tva, montant_ttc, statut, notes, created_by) values
+  ('f1000000-0000-0000-0000-000000000009','FACT-2026-009','c1000000-0000-0000-0000-000000000001','d1000000-0000-0000-0000-000000000007','2026-05-20','2026-06-19',340000,0,340000,'partielle','Facture détaillée — frais et honoraires.','aaaaaaaa-0000-0000-0000-000000000001');
+
+insert into lignes_facture (facture_id, libelle, categorie, quantite, montant_unitaire, montant, ordre) values
+  ('f1000000-0000-0000-0000-000000000009','Frais d''ouverture de dossier','ouverture',1,50000,50000,0),
+  ('f1000000-0000-0000-0000-000000000009','Déplacement audience (Yaoundé–Mfou, aller-retour)','deplacement',2,25000,50000,1),
+  ('f1000000-0000-0000-0000-000000000009','Honoraires recours administratif','honoraires',1,200000,200000,2),
+  ('f1000000-0000-0000-0000-000000000009','Timbres fiscaux et certification de copies conformes','debours',1,40000,40000,3);
+
+-- PAIEMENTS (sur factures payées / partielle), dont un paiement EN NATURE
+insert into paiements (facture_id, date_paiement, montant, mode_paiement, reference, notes) values
+  ('f1000000-0000-0000-0000-000000000001','2026-03-15',1500000,'virement','VIR-2026-0312',null),
+  ('f1000000-0000-0000-0000-000000000003','2026-03-10',2000000,'cheque','CHQ-001245',null),
+  ('f1000000-0000-0000-0000-000000000007','2026-04-05',1800000,'mobile_money','MOMO-778899',null),
+  ('f1000000-0000-0000-0000-000000000002','2026-04-25',1500000,'virement','VIR-2026-0418',null),
+  ('f1000000-0000-0000-0000-000000000009','2026-06-01',200000,'nature','Parcelle 200 m² à Mfou','Paiement en nature — valeur estimée du bien remis par le client.');
 
 -- ---------------------------------------------------------------------
 -- DEVIS (3 — statuts variés) + numéros explicites

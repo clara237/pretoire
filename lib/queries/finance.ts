@@ -161,6 +161,16 @@ export interface PaiementLigne {
   notes: string | null;
 }
 
+export interface LigneFactureManuelle {
+  id: string;
+  libelle: string;
+  categorie: string;
+  quantite: number;
+  montant_unitaire: number;
+  montant: number;
+  ordre: number;
+}
+
 export interface FactureDetail {
   id: string;
   numero: string;
@@ -178,7 +188,10 @@ export interface FactureDetail {
   client: ClientMini | null;
   dossier: DossierMini | null;
   paiements: PaiementLigne[];
+  /** Lignes issues des saisies de temps (mode « temps »). */
   lignes: SaisieTemps[];
+  /** Lignes détaillées saisies manuellement (mode « détaillé »). */
+  lignesManuelles: LigneFactureManuelle[];
 }
 
 /** Détail complet d'une facture : client, dossier, paiements, lignes (saisies liées). */
@@ -194,6 +207,7 @@ export async function recupererFacture(
         "client:clients(id, type, nom, prenom, raison_sociale), " +
         "dossier:dossiers(id, numero, titre, type_affaire), " +
         "paiements(id, date_paiement, montant, mode_paiement, reference, notes), " +
+        "lignesManuelles:lignes_facture(id, libelle, categorie, quantite, montant_unitaire, montant, ordre), " +
         "lignes:saisies_temps(" +
         "id, profile_id, dossier_id, date, type_tache, description, duree_heures, " +
         "taux_horaire, facturable, facture_id, created_at, " +
@@ -208,6 +222,7 @@ export async function recupererFacture(
     a.date_paiement < b.date_paiement ? 1 : -1,
   );
   f.lignes = (f.lignes ?? []).sort((a, b) => (a.date < b.date ? -1 : 1));
+  f.lignesManuelles = (f.lignesManuelles ?? []).sort((a, b) => a.ordre - b.ordre);
   return f;
 }
 
